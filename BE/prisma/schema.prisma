@@ -1,0 +1,101 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// model BlacklistedToken {
+//   id    Int    @id @default(autoincrement())
+//   token String @unique
+// }
+
+model User {
+  id            Int            @id @default(autoincrement())
+  username      String         @unique
+  password      String
+  fullname      String
+  image         String?
+  createdAt     DateTime       @default(now())
+  favoritePosts FavoritePost[] @relation("UserFavoritePosts")
+  posts         Post[]
+}
+
+model Post {
+  id              Int            @id @default(autoincrement())
+  title           String
+  content         String?
+  slug            String         @unique
+  authorId        Int
+  backgroundImage String?        @default("default-background-image-url")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  author          User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  favoritedBy     FavoritePost[] @relation("PostFavorites")
+  categories      Category[]     @relation("PostCategories")
+  extraFields     Json?
+}
+
+model FavoritePost {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  postId Int
+  user   User @relation("UserFavoritePosts", fields: [userId], references: [id])
+  post   Post @relation("PostFavorites", fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  posts Post[] @relation("PostCategories")
+
+  @@index([name])
+}
+
+// model User {
+//   id            Int            @id @default(autoincrement())
+//   username      String         @unique
+//   password      String
+//   fullname      String
+//   image         String?
+//   createdAt     DateTime       @default(now())
+//   favoritePosts FavoritePost[] @relation("UserFavoritePosts") // İlişki adı belirtildi
+//   posts         Post[]
+// }
+
+// model Post {
+//   id              Int            @id @default(autoincrement())
+//   title           String
+//   content         String?
+//   slug            String         @unique
+//   authorId        Int
+//   backgroundImage String?        @default("default-background-image-url")
+//   createdAt       DateTime       @default(now())
+//   updatedAt       DateTime       @updatedAt
+//   author          User           @relation(fields: [authorId], references: [id])
+//   favoritedBy     FavoritePost[] @relation("PostFavorites")
+//   categories      Category[]     @relation("PostCategories")
+//   extraFields     Json?
+// }
+
+// model FavoritePost {
+//   id     Int  @id @default(autoincrement())
+//   userId Int
+//   postId Int
+//   user   User @relation(fields: [userId], references: [id], name: "UserFavoritePosts")
+//   post   Post @relation(fields: [postId], references: [id], name: "PostFavorites")
+
+//   @@unique([userId, postId])
+// }
+
+// model Category {
+//   id    Int    @id @default(autoincrement())
+//   name  String @unique
+//   posts Post[] @relation("PostCategories")
+
+//   @@index([name])
+// }
